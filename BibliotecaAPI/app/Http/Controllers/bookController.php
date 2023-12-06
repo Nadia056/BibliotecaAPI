@@ -11,13 +11,23 @@ use Symfony\Contracts\Service\Attribute\Required;
 
 class bookController extends Controller
 {
+    protected function WS($event, $data)
+    {
+        $response = [
+            'event' => $event,
+            'data' => $data
+        ];
+
+        event(new \App\Events\MessageEvent(json_encode($response)));
+    }
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'titulo' => 'required|string|max:255',
             'autor' => 'required|string|max:255',
             'editorial' => 'required|string|max:255',
-            'año' => 'required|string',
+            'year' => 'required|string',
             'genero' => 'required|string|max:255',
             'codigo' => 'required|string|max:255',
             'estado' => 'required|string|max:255',
@@ -38,7 +48,7 @@ class bookController extends Controller
             'titulo' => $request->titulo,
             'autor' => $request->autor,
             'editorial' => $request->editorial,
-            'año' => $request->año,
+            'year' => $request->year,
             'genero' => $request->genero,
             'codigo' => $request->codigo,
             'estado' => $request->estado,
@@ -47,9 +57,8 @@ class bookController extends Controller
         ]);
 
         $book->save();
-       
-
-        return response()->json( 201);
+        $this->WS('new-book', $book);
+        return response()->json( 200);
     }
     
     public function deleteBook($id)
@@ -93,10 +102,10 @@ class bookController extends Controller
     {
         $validator= Validator::make($request->all(),
         [
-            'book_id'=> 'required|integer',
-            'cliente_id'=> 'required|integer',
-            'fecha_prestamo'=> 'required|date',
-            'fecha_devolucion'=> 'nullable|date'
+            'id_usuario'=> 'required|integer',
+            'id_libro'=> 'required|integer',
+            'fecha_prestamo'=> 'required|string',
+            'fecha_devolucion'=> 'nullable|string'
 
         ]);
         if ($validator->fails()) {
@@ -107,12 +116,12 @@ class bookController extends Controller
             ], 422);
         }
         #si no encuentra el libro 
-        $book= Book::find($request->book_id);
+        $book= Book::find($request->id_libro);
         if (!$book) {
             return response()->json('not found book');
         }
         #si no encuentra el cliente donde client_id es el id del cliente
-        $client= Usuario::find($request->cliente_id);
+        $client= Usuario::find($request->id_usuario);
         if (!$client) {
             return response()->json('not found client');
         }
@@ -121,16 +130,17 @@ class bookController extends Controller
             return response()->json('el libro ya esta prestado');
         }
         $prestamo= Prestamo::create([
-            'book_id'=> $request->book_id,
-            'cliente_id'=>$request->cliente_id,
+            'id_usuario'=> $request->id_usuario,
+            'id_libro'=>$request->id_libro,
             'fecha_prestamo'=>$request->fecha_prestamo,
             'fecha_devolucion'=>$request->fecha_devolucion
             
         ]);
-        $book= Book::find($request->book_id);
+        $book= Book::find($request->id_libro);
         $book->estado='prestado';
         $book->save();
         $prestamo->save();
+        return response()->json( 200);
     }
     public function returnBook(Request $request,$id)
     {
@@ -140,7 +150,7 @@ class bookController extends Controller
         }
         $prestamo->fecha_devolucion=$request->fecha_devolucion;
         $prestamo->save();
-        $book= Book::find($request->book_id);
+        $book= Book::find($request->id_libro);
         $book->estado='Disponible';
         $book->save();
         return response()->json( 201);
@@ -148,12 +158,62 @@ class bookController extends Controller
     }
     public function getAllPrestamos()
     {
-        $prestamo = Prestamo::all();
-        return response()->json($prestamo, 200);
+        $prestamos = Prestamo::all();
+    
+        foreach ($prestamos as $prestamo) {
+            $book = Book::find($prestamo->id_libro);
+            $prestamo->libro = $book ? $book->titulo : null;
+    
+            $client = Usuario::find($prestamo->id_usuario);
+            $prestamo->cliente = $client ? $client->nombre : null;
+        }
 
+        $this->WS('new-prestamo', $prestamos);
+    
+        return response()->json($prestamos, 200);
+    }
+    public function updatePrestamo(Request $request,$id)
+    {
+        $prestamo = Prestamo::find($id);
+        if (!$prestamo) {
+            return response()->json('not found');
+        }
+        $prestamo->update($request->all());
+        return response()->json($prestamo, 200);
+        
+    }
+    public function deletePrestamo($id)
+    {
+        $prestamo= Prestamo::find($id);
+        if (!$prestamo) {
+            return response()->json('not found');
+        }
+        $prestamo->delete();
+        return response()->json( 201);
+    }
+    
+    public function onePrestamo($id)
+    {
+       //buscar los prestamos del cliente por id
+        $prestamos = Prestamo::where('id_usuario', $id)->get();
+        //si no encuentra el cliente
+        if (!$prestamos) {
+            return response()->json('not found');
+        }
+        //si encuentra el cliente
+        foreach ($prestamos as $prestamo) {
+            $book = Book::find($prestamo->id_libro);
+            $prestamo->libro = $book ? $book->titulo : null;
+    
+            $client = Usuario::find($prestamo->id_usuario);
+            $prestamo->cliente = $client ? $client->nombre : null;
+        }
+
+       
+        return response()->json($prestamos, 200);
     }
 
-    
+
 }
 
 

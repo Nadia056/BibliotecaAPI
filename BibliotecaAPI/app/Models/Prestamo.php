@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Prestamo extends Model
 {
     protected $fillable = [
-        'book_id',
-        'cliente_id',
+        'id_libro',
+        'id_usuario',
         'fecha_prestamo',
         'fecha_devolucion',
     ];

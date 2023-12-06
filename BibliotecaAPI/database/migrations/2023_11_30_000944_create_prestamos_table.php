@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('prestamos', function (Blueprint $table) {
             $table->id();
-            $table->string('cliente_id');
-            $table->string('book_id');
-            $table->date('fecha_prestamo');
-            $table->date('fecha_devolucion')->nullable();
+            $table->string('id_usuario');
+            $table->string('id_libro');
+            $table->string('fecha_prestamo');
+            $table->string('fecha_devolucion')->nullable();
             $table->timestamps();
         });
     }

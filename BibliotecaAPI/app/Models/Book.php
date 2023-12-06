@@ -11,7 +11,7 @@ class Book extends Model
         'titulo',
         'autor',
         'editorial',
-        'año',
+        'year',
         'genero',
         'codigo',
         'estado'

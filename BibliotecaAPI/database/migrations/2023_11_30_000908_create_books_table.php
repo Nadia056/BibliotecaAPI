@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('titulo');
             $table->string('autor');
             $table->string('editorial');
-            $table->string('año');
+            $table->string('year');
             $table->string('genero');
             $table->string('codigo');
             $table->string('estado');
