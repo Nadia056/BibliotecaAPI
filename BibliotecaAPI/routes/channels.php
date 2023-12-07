@@ -16,3 +16,22 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
+
+Broadcast::channel('channel-message', function ($user) {
+    return true;
+});
+Broadcast::channel('battel-game', function ($user) {
+  return true;
+});
+
+Broadcast::channel('channel-game', function ($user) {
+  return true;
+});
+Broadcast::channel('ship-game', function ($user) {
+    return true;
+  });
+
+Broadcast::channel('sse-move', function () {
+    return true; 
+});

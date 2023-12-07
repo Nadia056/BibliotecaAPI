@@ -11,15 +11,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 
 class bookController extends Controller
 {
-    protected function WS($event, $data)
-    {
-        $response = [
-            'event' => $event,
-            'data' => $data
-        ];
-
-        event(new \App\Events\MessageEvent(json_encode($response)));
-    }
+ 
 
     public function register(Request $request)
     {
@@ -57,8 +49,7 @@ class bookController extends Controller
         ]);
 
         $book->save();
-        $this->WS('new-book', $book);
-        return response()->json( 200);
+      
     }
     
     public function deleteBook($id)
@@ -167,10 +158,9 @@ class bookController extends Controller
             $client = Usuario::find($prestamo->id_usuario);
             $prestamo->cliente = $client ? $client->nombre : null;
         }
-
-        $this->WS('new-prestamo', $prestamos);
-    
         return response()->json($prestamos, 200);
+
+        
     }
     public function updatePrestamo(Request $request,$id)
     {

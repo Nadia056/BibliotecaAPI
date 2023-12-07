@@ -12,7 +12,12 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+use BeyondCode\LaravelWebSockets\Http\Controllers\WebSocketController;
+use Illuminate\Support\Facades\Broadcast;
 
+Broadcast::routes(['middleware' => ['web', 'auth']], function ($router) {
+    $router->webSocket('/app');
+});
 Route::get('/', function () {
     return view('welcome');
 });
